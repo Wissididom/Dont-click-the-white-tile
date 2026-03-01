@@ -1,4 +1,8 @@
-﻿Public Class frmGame
+﻿Imports System.Drawing
+Imports System.Windows.Forms
+Imports System.ComponentModel
+
+Public Class FrmGame
 
     Shared Property Instance As Object
 
@@ -6,11 +10,15 @@
     Private LastCheckedActions As Integer = 0
     Private Stopwatch As New Stopwatch()
 
+    <DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)>
     Public Property Points As Integer = 0
+    <DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)>
     Public Property ActionsPerMinute As Integer
+    <DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)>
     Public Property GameOver As Boolean
+    <DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)>
     Public Property Time As String
-
+    <DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)>
     Public Property Tiles As New List(Of Tile)
     Private _rnd As New Random
 
@@ -21,22 +29,22 @@
         End Select
     End Sub
 
-    Private Sub frmGame_Load(sender As Object, e As EventArgs) Handles Me.Load
-        setupForm()
-        startGame()
+    Private Sub FrmGame_Load(sender As Object, e As EventArgs) Handles Me.Load
+        SetupForm()
+        StartGame()
     End Sub
 
-    Private Sub setupForm()
+    Private Sub SetupForm()
         Instance = Me
         Me.BackColor = Color.Azure
         Me.DoubleBuffered = True
-        Me.FormBorderStyle = Windows.Forms.FormBorderStyle.FixedSingle
+        Me.FormBorderStyle = FormBorderStyle.FixedSingle
         Me.StartPosition = FormStartPosition.CenterScreen
         Me.TopMost = True ' damit die Form auf bleibt, auch wenn man mal daneben klickt
     End Sub
 
-    Private Sub startGame()
-        addNewTiles()
+    Private Sub StartGame()
+        AddNewTiles()
         Me.Invalidate()
         Stopwatch.Start()
         tmrStatistics.Start()
@@ -44,7 +52,7 @@
 
     Private Sub Restart()
         Tiles.Clear()
-        addNewTiles()
+        AddNewTiles()
         GameOver = False
         Me.Invalidate()
         Stopwatch.Reset()
@@ -52,7 +60,7 @@
         tmrStatistics.Start()
     End Sub
 
-    Private Sub addNewTiles()
+    Private Sub AddNewTiles()
         For row As Integer = 1 To 3
             Dim black = _rnd.Next(1, 4)
             For column As Integer = 1 To 3
@@ -61,12 +69,12 @@
         Next
     End Sub
 
-    Private Sub frmGame_MouseClick(sender As Object, e As MouseEventArgs) Handles Me.MouseClick
+    Private Sub FrmGame_MouseClick(sender As Object, e As MouseEventArgs) Handles Me.MouseClick
         If GameOver Then Return ' einfach direkt rausspringen, wenn GameOver ist
-        Dim tile = getTilefromLocation(e.Location)
+        Dim tile = GetTilefromLocation(e.Location)
         If tile Is Nothing Then Return ' wenn auf Rand geklickt, kann passieren dann return
         Actions += 1
-        If tile.rowNumber = 3 AndAlso tile.black Then
+        If tile.RowNumber = 3 AndAlso tile.Black Then
             Points += 1
 
             ' letzte Reihe entfernen
@@ -74,13 +82,13 @@
 
             ' Nummerierung korrigieren
             For Each t As Tile In Tiles
-                t.rowNumber += 1
+                t.RowNumber += 1
             Next
 
             ' neue Reihe hinzufügen
             Dim black = _rnd.Next(1, 4)
             For i As Integer = 1 To 3
-                Tiles.Insert(0, New Tile(If(i = black, True, False), i, 1))
+                Tiles.Insert(0, New Tile(i = black, i, 1))
             Next
         Else
             GameOver = True
@@ -93,7 +101,7 @@
         Me.Invalidate()
     End Sub
 
-    Private Sub frmGame_Paint(sender As Object, e As PaintEventArgs) Handles Me.Paint
+    Private Sub FrmGame_Paint(sender As Object, e As PaintEventArgs) Handles Me.Paint
         If Not GameOver Then
             For Each t As Tile In Tiles
                 t.Draw(e.Graphics)
@@ -134,14 +142,14 @@
         End If
     End Sub
 
-    Private Function getTilefromLocation(point As Point) As Tile
+    Private Function GetTilefromLocation(point As Point) As Tile
         For Each t As Tile In Tiles()
-            If t.gPath.IsVisible(point) Then Return t
+            If t.GPath.IsVisible(point) Then Return t
         Next
         Return Nothing
     End Function
 
-    Private Sub tmrStatistics_Tick(sender As Object, e As EventArgs) Handles tmrStatistics.Tick
+    Private Sub TmrStatistics_Tick(sender As Object, e As EventArgs) Handles tmrStatistics.Tick
         ' Beste Beispiel für NICHT mehrere Timer a la: tmrAPM, tmrPPM, tmrWeißDerGeierIchWasteResourcenxD
         ActionsPerMinute = (Actions - LastCheckedActions) * 60 ' Anzahl der Klicks der letzten Sekunde * 60
         LastCheckedActions = Actions
